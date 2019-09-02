@@ -21,9 +21,6 @@ looker.plugins.visualizations.add({
           opacity: 0;
         }
       </style>
-
-      <div id="venn"></div>
-      <div class="venntooltip"></div>
     `;
 
     var container = element.appendChild(document.createElement("div"));
@@ -41,69 +38,65 @@ looker.plugins.visualizations.add({
       return;
     }
 
-    element.innerHTML = `
-      <script>
-      //ベン図データセット
-      var sets = [
-          {sets: ['A'], size: 200},
-          {sets: ['B'], size: 250},
-          {sets: ['C'], size: 300},
-          {sets: ['A','B'], size: 80},
-          {sets: ['A','C'], size: 70},
-          {sets: ['B','C'], size: 75},
-          {sets: ['A','B','C'], size: 20},
-      ];
+    //ベン図データセット
+    var sets = [
+        {sets: ['A'], size: 200},
+        {sets: ['B'], size: 250},
+        {sets: ['C'], size: 300},
+        {sets: ['A','B'], size: 80},
+        {sets: ['A','C'], size: 70},
+        {sets: ['B','C'], size: 75},
+        {sets: ['A','B','C'], size: 20},
+    ];
 
-      // create diagram
-      var div = d3.select("#venn")
-      div.datum(sets).call(venn.VennDiagram());
+    // create diagram
+    var div = d3.select("#venn")
+    div.datum(sets).call(venn.VennDiagram());
 
-      // add a tooltip
-      var tooltip = d3.select("body").append("div")
-          .attr("class", "venntooltip");
+    // add a tooltip
+    var tooltip = d3.select("body").append("div")
+        .attr("class", "venntooltip");
 
-      div.selectAll("path")
-          .style("stroke-opacity", 0)
-          .style("stroke", "#fff")
-          .style("stroke-width", 3);
+    div.selectAll("path")
+        .style("stroke-opacity", 0)
+        .style("stroke", "#fff")
+        .style("stroke-width", 3);
 
-      // add listeners to all the groups to display tooltip on mouseover
-      div.selectAll("g")
-          .on("click", function(d, i) {
-            window.open('https://www.google.co.jp/search?q=' + d.sets.join('+'));
-          })
+    // add listeners to all the groups to display tooltip on mouseover
+    div.selectAll("g")
+        .on("click", function(d, i) {
+          window.open('https://www.google.co.jp/search?q=' + d.sets.join('+'));
+        })
 
-          .on("mouseover", function(d, i) {
-              // sort all the areas relative to the current item
-              venn.sortAreas(div, d);
+        .on("mouseover", function(d, i) {
+            // sort all the areas relative to the current item
+            venn.sortAreas(div, d);
 
-              // Display a tooltip with the current size
-              tooltip.transition().duration(400).style("opacity", .9);
-              tooltip.text(d.size + " users");
+            // Display a tooltip with the current size
+            tooltip.transition().duration(400).style("opacity", .9);
+            tooltip.text(d.size + " users");
 
-              // highlight the current path
-              var selection = d3.select(this).transition("tooltip").duration(400);
-              selection.select("path")
-                  .style("stroke-width", 3)
-                  .style("fill-opacity", d.sets.length == 1 ? .4 : .1)
-                  .style("stroke-opacity", 1);
-          })
+            // highlight the current path
+            var selection = d3.select(this).transition("tooltip").duration(400);
+            selection.select("path")
+                .style("stroke-width", 3)
+                .style("fill-opacity", d.sets.length == 1 ? .4 : .1)
+                .style("stroke-opacity", 1);
+        })
 
-          .on("mousemove", function() {
-              tooltip.style("left", (d3.event.pageX) + "px")
-                    .style("top", (d3.event.pageY - 28) + "px");
-          })
+        .on("mousemove", function() {
+            tooltip.style("left", (d3.event.pageX) + "px")
+                  .style("top", (d3.event.pageY - 28) + "px");
+        })
 
-          .on("mouseout", function(d, i) {
-              tooltip.transition().duration(400).style("opacity", 0);
-              var selection = d3.select(this).transition("tooltip").duration(400);
-              selection.select("path")
-                  .style("stroke-width", 0)
-                  .style("fill-opacity", d.sets.length == 1 ? .25 : .0)
-                  .style("stroke-opacity", 0);
-          });
-      </script>
-    `;
+        .on("mouseout", function(d, i) {
+            tooltip.transition().duration(400).style("opacity", 0);
+            var selection = d3.select(this).transition("tooltip").duration(400);
+            selection.select("path")
+                .style("stroke-width", 0)
+                .style("fill-opacity", d.sets.length == 1 ? .25 : .0)
+                .style("stroke-opacity", 0);
+        });
 
     done()
   }
