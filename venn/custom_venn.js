@@ -63,7 +63,7 @@ looker.plugins.visualizations.add({
     tooltip.className = "venntooltip";
 
     for (var i=1; i<=7; i++) {
-      var chart_area = element.appendChild(document.createElement("div"));
+      var chart_area = element.appendChild(document.createElement("svg"));
       chart_area.id = "chart_" + i;
       chart_area.className = "chart";
     }
