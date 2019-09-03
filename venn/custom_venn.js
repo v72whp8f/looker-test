@@ -1,6 +1,8 @@
+var sets = [];
+
 looker.plugins.visualizations.add({
-  id: "venn",
-  label: "Venn",
+  id: "sample_venn",
+  label: "Sample_venn",
   options: {
 
   },
@@ -23,8 +25,8 @@ looker.plugins.visualizations.add({
       </style>
     `;
 
-    var container = element.appendChild(document.createElement("div"));
-    container.id = "venn";
+    var venn_area = element.appendChild(document.createElement("div"));
+    venn_area.id = "venn";
 
     var tooltip = element.appendChild(document.createElement("div"));
     tooltip.className = "venntooltip";
@@ -33,21 +35,7 @@ looker.plugins.visualizations.add({
   updateAsync: function(data, element, config, queryResponse, details, done) {
     this.clearErrors();
 
-    if (queryResponse.fields.dimensions.length == 0) {
-      this.addError({title: "No Dimensions", message: "This chart requires dimensions."});
-      return;
-    }
-
-    //ベン図データセット
-    var sets = [
-        {sets: ['A'], size: 200},
-        {sets: ['B'], size: 250},
-        {sets: ['C'], size: 300},
-        {sets: ['A','B'], size: 80},
-        {sets: ['A','C'], size: 70},
-        {sets: ['B','C'], size: 75},
-        {sets: ['A','B','C'], size: 20},
-    ];
+    setGraphData();
 
     // create diagram
     var div = d3.select("#venn")
@@ -65,7 +53,7 @@ looker.plugins.visualizations.add({
     // add listeners to all the groups to display tooltip on mouseover
     div.selectAll("g")
         .on("click", function(d, i) {
-          window.open('https://www.google.co.jp/search?q=' + d.sets.join('+'));
+
         })
 
         .on("mouseover", function(d, i) {
@@ -101,3 +89,15 @@ looker.plugins.visualizations.add({
     done()
   }
 });
+
+function setGraphData() {
+  sets = [
+    {sets: ['A'], size: 200},
+    {sets: ['B'], size: 250},
+    {sets: ['C'], size: 300},
+    {sets: ['A','B'], size: 80},
+    {sets: ['A','C'], size: 70},
+    {sets: ['B','C'], size: 75},
+    {sets: ['A','B','C'], size: 20},
+  ];
+}
