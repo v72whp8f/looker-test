@@ -178,7 +178,7 @@ function createBarChart(id, data) {
   }
 
   // Color scale
-  var color = ["#0068B7", "#ef857d"];
+  var color = ["#68A4D9", "#ef857d"];
   var chartHeight = barHeight * zippedData.length + gapBetweenGroups * labels.length;
 
   var x = d3.scaleLinear()
