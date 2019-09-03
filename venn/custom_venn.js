@@ -63,7 +63,7 @@ looker.plugins.visualizations.add({
     tooltip.className = "venntooltip";
 
     for (var i=1; i<=7; i++) {
-      var chart_area = element.appendChild(document.createElement("svg"));
+      var chart_area = element.appendChild(document.createElement("div"));
       chart_area.id = "chart_" + i;
       chart_area.className = "chart";
     }
@@ -193,7 +193,8 @@ function createBarChart(id, data) {
       .tickSizeInner(0);
 
   // Specify the chart area and dimensions
-  var chart = d3.select("#" + id)
+  d3.select("#" + id).append("svg");
+  var chart = d3.select("#" + id + " svg")
       .attr("width", spaceForLabels + chartWidth + spaceForLegend)
       .attr("height", chartHeight);
 
