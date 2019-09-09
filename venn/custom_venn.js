@@ -72,38 +72,88 @@ looker.plugins.visualizations.add({
   updateAsync: function(data, element, config, queryResponse, details, done) {
     this.clearErrors();
 
+    setGraphData(getSampleData());
+
     createVenn(getVennData());
 
-    for (var i=1; i<=7; i++) {
-      var data = {
+    for (var i=0; i<graphData.length; i++) {
+      var chart_data = {
         series: [
           {
             label: "男性",
-            values: getRondomValues()
+            values: graphData[i].male
           },
           {
             label: "女性",
-            values: getRondomValues()
+            values: graphData[i].female
           }
         ]
       };
 
-      createBarChart("chart_" + i, data);
+      createBarChart("chart_" + (i+1), chart_data);
     }
 
     done()
   }
 });
 
+var labels = [];
+var graphData = [];
+
+function setGraphData(data) {
+  labels = [];
+  graphData = [];
+
+  for (var i=0; i<7; i++) {
+    graphData.push({ total: 0, male: [], female: [] });
+  }
+
+  data.forEach(function(row) {
+    graphData[0].total += row.count_a.value;
+    graphData[1].total += row.count_b.value;
+    graphData[2].total += row.count_c.value;
+    graphData[3].total += row.count_a_b.value;
+    graphData[4].total += row.count_a_c.value;
+    graphData[5].total += row.count_b_c.value;
+    graphData[6].total += row.count_a_b_c.value;
+
+    if (row.nage.value == null) {
+      return;
+    }
+
+    if ($.inArray(row.nage.value, labels) < 0) {
+      labels.push(row.nage.value);
+    }
+
+    if (row.sex.value == "男性") {
+      graphData[0].male.push(row.count_a.value);
+      graphData[1].male.push(row.count_b.value);
+      graphData[2].male.push(row.count_c.value);
+      graphData[3].male.push(row.count_a_b.value);
+      graphData[4].male.push(row.count_a_c.value);
+      graphData[5].male.push(row.count_b_c.value);
+      graphData[6].male.push(row.count_a_b_c.value);
+    } else if (row.sex.value == "女性") {
+      graphData[0].female.push(row.count_a.value);
+      graphData[1].female.push(row.count_b.value);
+      graphData[2].female.push(row.count_c.value);
+      graphData[3].female.push(row.count_a_b.value);
+      graphData[4].female.push(row.count_a_c.value);
+      graphData[5].female.push(row.count_b_c.value);
+      graphData[6].female.push(row.count_a_b_c.value);
+    }
+  });
+}
+
 function getVennData() {
   return [
-    {sets: ["A"], size: 200, relation_chart: "chart_1"},
-    {sets: ["B"], size: 250, relation_chart: "chart_2"},
-    {sets: ["C"], size: 300, relation_chart: "chart_3"},
-    {sets: ["A","B"], size: 80, relation_chart: "chart_4"},
-    {sets: ["A","C"], size: 70, relation_chart: "chart_5"},
-    {sets: ["B","C"], size: 75, relation_chart: "chart_6"},
-    {sets: ["A","B","C"], size: 20, relation_chart: "chart_7"},
+    {sets: ["A"], size: graphData[0].total, relation_chart: "chart_1"},
+    {sets: ["B"], size: graphData[1].total, relation_chart: "chart_2"},
+    {sets: ["C"], size: graphData[2].total, relation_chart: "chart_3"},
+    {sets: ["A","B"], size: graphData[3].total, relation_chart: "chart_4"},
+    {sets: ["A","C"], size: graphData[4].total, relation_chart: "chart_5"},
+    {sets: ["B","C"], size: graphData[5].total, relation_chart: "chart_6"},
+    {sets: ["A","B","C"], size: graphData[6].total, relation_chart: "chart_7"},
   ];
 }
 
@@ -124,7 +174,7 @@ function createVenn(sets) {
   // add listeners to all the groups to display tooltip on mouseover
   div.selectAll("g")
     .on("click", function(d, i) {
-      $("[id^='chart_").hide();
+      $("[id^='chart_'").hide();
       $("#" + d.relation_chart).show();
     })
 
@@ -160,8 +210,6 @@ function createVenn(sets) {
 }
 
 function createBarChart(id, data) {
-  var labels = ["10代", "20代", "30代", "40代", "50代", "60代"];
-
   var chartWidth       = 300,
       barHeight        = 15,
       groupHeight      = barHeight * data.series.length,
@@ -178,7 +226,7 @@ function createBarChart(id, data) {
   }
 
   // Color scale
-  var color = ["#68A4D9", "#ef857d"];
+  var color = ["#68a4d9", "#ef857d"];
   var chartHeight = barHeight * zippedData.length + gapBetweenGroups * labels.length;
 
   var x = d3.scaleLinear()
@@ -267,14 +315,51 @@ function createBarChart(id, data) {
       .text(function (d) { return d.label; });
 }
 
-function getRondomNumber() {
-  return Math.floor(Math.random() * 101);
+function getRondomNumber(max_value) {
+  return Math.floor(Math.random() * (max_value + 1));
 }
 
-function getRondomValues() {
-  var values = [];
-  for (var i=0; i<6; i++) {
-    values.push(getRondomNumber());
-  }
-  return values;
+function getSampleData() {
+  var data = [];
+  var sample_labels = ["10代", "20代", "30代", "40代", "50代", "60代"];
+
+  sample_labels.forEach(function(label) {
+    data.push({
+      nage: { value: label },
+      sex: { value: "女性" },
+      count_a: { value: getRondomNumber(500) },
+      count_b: { value: getRondomNumber(500) },
+      count_c: { value: getRondomNumber(500) },
+      count_a_b: { value: getRondomNumber(200) },
+      count_a_c: { value: getRondomNumber(200) },
+      count_b_c: { value: getRondomNumber(200) },
+      count_a_b_c: { value: getRondomNumber(100) },
+    });
+
+    data.push({
+      nage: { value: label },
+      sex: { value: "男性" },
+      count_a: { value: getRondomNumber(500) },
+      count_b: { value: getRondomNumber(500) },
+      count_c: { value: getRondomNumber(500) },
+      count_a_b: { value: getRondomNumber(200) },
+      count_a_c: { value: getRondomNumber(200) },
+      count_b_c: { value: getRondomNumber(200) },
+      count_a_b_c: { value: getRondomNumber(100) },
+    });
+  });
+
+  data.push({
+    nage: { value: null },
+    sex: { value: null },
+    count_a: { value: getRondomNumber(1000) },
+    count_b: { value: getRondomNumber(1000) },
+    count_c: { value: getRondomNumber(1000) },
+    count_a_b: { value: getRondomNumber(400) },
+    count_a_c: { value: getRondomNumber(400) },
+    count_b_c: { value: getRondomNumber(400) },
+    count_a_b_c: { value: getRondomNumber(100) },
+  });
+
+  return data;
 }
