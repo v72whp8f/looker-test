@@ -59,7 +59,7 @@ looker.plugins.visualizations.add({
     var venn_area = element.appendChild(document.createElement("div"));
     venn_area.id = "venn";
 
-    for (var i=1; i<=7; i++) {
+    for (var i=1; i<=measureColumnNames.length; i++) {
       var chart_area = element.appendChild(document.createElement("div"));
       chart_area.id = "chart_" + i;
       chart_area.className = "chart";
@@ -96,54 +96,70 @@ looker.plugins.visualizations.add({
 
 var labels = [];
 var graphData = [];
+var measureColumnNames = [
+  "count_a",
+  "count_b",
+  "count_c",
+  "count_a_b",
+  "count_a_c",
+  "count_b_c",
+  "count_a_b_c",
+];
 
-function setGraphData(data) {
+function clearParameters() {
   labels = [];
   graphData = [];
+}
 
-  for (var i=0; i<7; i++) {
+function generateRowData(row) {
+  var rowData = {};
+  Object.keys(row).forEach(function(key) {
+    var newKey = key.slice(str.indexOf("."));
+    rowData[newKey] = row[key].value;
+  });
+
+  return rowData;
+}
+
+function setGraphData(data) {
+  clearParameters();
+
+  for (var i=0; i<measureColumnNames.length; i++) {
     graphData.push({ total: 0, male: [], female: [] });
   }
 
   data.forEach(function(row) {
-    graphData[0].total += row.count_a.value;
-    graphData[1].total += row.count_b.value;
-    graphData[2].total += row.count_c.value;
-    graphData[3].total += row.count_a_b.value;
-    graphData[4].total += row.count_a_c.value;
-    graphData[5].total += row.count_b_c.value;
-    graphData[6].total += row.count_a_b_c.value;
+    rowData = generateRowData(row);
 
-    if (row.nage.value == null) {
+    for (var i=0; i<measureColumnNames.length; i++) {
+      graphData[i].total += rowData[measureColumnNames[i]];
+    }
+
+    var nageValue = rowData.nage;
+    if (nageValue == null) {
       return;
     }
 
-    var index = $.inArray(row.nage.value, labels);
+    var index = $.inArray(nageValue, labels);
     if (index < 0) {
-      labels.push(row.nage.value);
+      labels.push(nageValue);
+      index = $.inArray(nageValue, labels);
 
-      for (var i=0; i<7; i++) {
+      for (var i=0; i<measureColumnNames.length; i++) {
         graphData[i].male.push(0);
         graphData[i].female.push(0);
       }
     }
 
-    if (row.sex.value == "男性") {
-      graphData[0].male[index] = row.count_a.value;
-      graphData[1].male[index] = row.count_b.value;
-      graphData[2].male[index] = row.count_c.value;
-      graphData[3].male[index] = row.count_a_b.value;
-      graphData[4].male[index] = row.count_a_c.value;
-      graphData[5].male[index] = row.count_b_c.value;
-      graphData[6].male[index] = row.count_a_b_c.value;
-    } else if (row.sex.value == "女性") {
-      graphData[0].female[index] = row.count_a.value;
-      graphData[1].female[index] = row.count_b.value;
-      graphData[2].female[index] = row.count_c.value;
-      graphData[3].female[index] = row.count_a_b.value;
-      graphData[4].female[index] = row.count_a_c.value;
-      graphData[5].female[index] = row.count_b_c.value;
-      graphData[6].female[index] = row.count_a_b_c.value;
+    var sexValue = rowData.sex;
+    if (sexValue == "男性") {
+      for (var i=0; i<measureColumnNames.length; i++) {
+        graphData[i].male[index] = row[measureColumnNames[i]];
+      }
+    } else if (sexValue == "女性") {
+      for (var i=0; i<measureColumnNames.length; i++) {
+        graphData[i].female[index] = row[measureColumnNames[i]];
+      }
     }
   });
 }
