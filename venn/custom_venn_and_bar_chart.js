@@ -154,11 +154,11 @@ function setGraphData(data) {
     var sexValue = rowData.sex;
     if (sexValue == "男性") {
       for (var i=0; i<measureColumnNames.length; i++) {
-        graphData[i].male[index] = row[measureColumnNames[i]];
+        graphData[i].male[index] = rowData[measureColumnNames[i]];
       }
     } else if (sexValue == "女性") {
       for (var i=0; i<measureColumnNames.length; i++) {
-        graphData[i].female[index] = row[measureColumnNames[i]];
+        graphData[i].female[index] = rowData[measureColumnNames[i]];
       }
     }
   });
