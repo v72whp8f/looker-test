@@ -114,7 +114,7 @@ function clearParameters() {
 function generateRowData(row) {
   var rowData = {};
   Object.keys(row).forEach(function(key) {
-    var newKey = key.slice(str.indexOf("."));
+    var newKey = key.slice(key.indexOf("."));
     rowData[newKey] = row[key].value;
   });
 
