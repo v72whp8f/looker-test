@@ -178,7 +178,7 @@ function getVennData() {
 
 function createVenn(sets) {
   // create diagram
-  var div = d3.select("#venn")
+  var div = d3.select("#venn");
   div.datum(sets).call(venn.VennDiagram());
 
   // add a tooltip
@@ -193,7 +193,7 @@ function createVenn(sets) {
   // add listeners to all the groups to display tooltip on mouseover
   div.selectAll("g")
     .on("click", function(d, i) {
-      $("[id^='chart_'").hide();
+      $("[id^='chart_']").hide();
       $("#" + d.relation_chart).show();
     })
 
@@ -219,12 +219,12 @@ function createVenn(sets) {
     })
 
     .on("mouseout", function(d, i) {
-        tooltip.transition().duration(400).style("opacity", 0);
-        var selection = d3.select(this).transition("tooltip").duration(400);
-        selection.select("path")
-          .style("stroke-width", 0)
-          .style("fill-opacity", d.sets.length == 1 ? .25 : .0)
-          .style("stroke-opacity", 0);
+      tooltip.transition().duration(400).style("opacity", 0);
+      var selection = d3.select(this).transition("tooltip").duration(400);
+      selection.select("path")
+        .style("stroke-width", 0)
+        .style("fill-opacity", d.sets.length == 1 ? .25 : .0)
+        .style("stroke-opacity", 0);
     });
 }
 
