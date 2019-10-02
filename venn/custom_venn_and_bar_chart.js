@@ -90,7 +90,7 @@ looker.plugins.visualizations.add({
       createBarChart("chart_" + (i+1), chart_data);
     }
 
-    done()
+    done();
   }
 });
 
