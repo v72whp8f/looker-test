@@ -53,7 +53,10 @@ looker.plugins.visualizations.add({
     var venn_area = element.appendChild(document.createElement("div"));
     venn_area.id = "venn";
 
-    for (var i=1; i<=measureColumnNames.length; i++) {
+    var tooltip = element.appendChild(document.createElement("div"));
+    tooltip.className = "venntooltip";
+
+    for (var i=1; i<=7; i++) {
       var chart_area = element.appendChild(document.createElement("div"));
       chart_area.id = "chart_" + i;
       chart_area.className = "chart";
@@ -63,7 +66,7 @@ looker.plugins.visualizations.add({
   updateAsync: function(data, element, config, queryResponse, details, done) {
     this.clearErrors();
 
-    setGraphData(data);
+    setGraphData(getSampleData());
 
     createVenn(getVennData());
 
@@ -84,76 +87,54 @@ looker.plugins.visualizations.add({
       createBarChart("chart_" + (i+1), chart_data);
     }
 
-    done();
+    done()
   }
 });
 
 var labels = [];
 var graphData = [];
-var measureColumnNames = [
-  "count_a",
-  "count_b",
-  "count_c",
-  "count_a_b",
-  "count_a_c",
-  "count_b_c",
-  "count_a_b_c",
-];
-
-function clearParameters() {
-  labels = [];
-  graphData = [];
-}
-
-function generateRowData(row) {
-  var rowData = {};
-  Object.keys(row).forEach(function(key) {
-    var newKey = key.slice(key.indexOf(".") + 1);
-    rowData[newKey] = row[key].value;
-  });
-
-  return rowData;
-}
 
 function setGraphData(data) {
-  clearParameters();
+  labels = [];
+  graphData = [];
 
-  for (var i=0; i<measureColumnNames.length; i++) {
+  for (var i=0; i<7; i++) {
     graphData.push({ total: 0, male: [], female: [] });
   }
 
   data.forEach(function(row) {
-    rowData = generateRowData(row);
+    graphData[0].total += row.count_a.value;
+    graphData[1].total += row.count_b.value;
+    graphData[2].total += row.count_c.value;
+    graphData[3].total += row.count_a_b.value;
+    graphData[4].total += row.count_a_c.value;
+    graphData[5].total += row.count_b_c.value;
+    graphData[6].total += row.count_a_b_c.value;
 
-    for (var i=0; i<measureColumnNames.length; i++) {
-      graphData[i].total += rowData[measureColumnNames[i]];
-    }
-
-    var nageValue = rowData.nage;
-    if (nageValue == null) {
+    if (row.nage.value == null) {
       return;
     }
 
-    var index = $.inArray(nageValue, labels);
-    if (index < 0) {
-      labels.push(nageValue);
-      index = $.inArray(nageValue, labels);
-
-      for (var i=0; i<measureColumnNames.length; i++) {
-        graphData[i].male.push(0);
-        graphData[i].female.push(0);
-      }
+    if ($.inArray(row.nage.value, labels) < 0) {
+      labels.push(row.nage.value);
     }
 
-    var sexValue = rowData.sex;
-    if (sexValue == "男性") {
-      for (var i=0; i<measureColumnNames.length; i++) {
-        graphData[i].male[index] = rowData[measureColumnNames[i]];
-      }
-    } else if (sexValue == "女性") {
-      for (var i=0; i<measureColumnNames.length; i++) {
-        graphData[i].female[index] = rowData[measureColumnNames[i]];
-      }
+    if (row.sex.value == "男性") {
+      graphData[0].male.push(row.count_a.value);
+      graphData[1].male.push(row.count_b.value);
+      graphData[2].male.push(row.count_c.value);
+      graphData[3].male.push(row.count_a_b.value);
+      graphData[4].male.push(row.count_a_c.value);
+      graphData[5].male.push(row.count_b_c.value);
+      graphData[6].male.push(row.count_a_b_c.value);
+    } else if (row.sex.value == "女性") {
+      graphData[0].female.push(row.count_a.value);
+      graphData[1].female.push(row.count_b.value);
+      graphData[2].female.push(row.count_c.value);
+      graphData[3].female.push(row.count_a_b.value);
+      graphData[4].female.push(row.count_a_c.value);
+      graphData[5].female.push(row.count_b_c.value);
+      graphData[6].female.push(row.count_a_b_c.value);
     }
   });
 }
@@ -172,7 +153,7 @@ function getVennData() {
 
 function createVenn(sets) {
   // create diagram
-  var div = d3.select("#venn");
+  var div = d3.select("#venn")
   div.datum(sets).call(venn.VennDiagram());
 
   // add a tooltip
@@ -187,7 +168,7 @@ function createVenn(sets) {
   // add listeners to all the groups to display tooltip on mouseover
   div.selectAll("g")
     .on("click", function(d, i) {
-      $("[id^='chart_']").hide();
+      $("[id^='chart_'").hide();
       $("#" + d.relation_chart).show();
 
       parentPost(d.relation_chart);
@@ -215,12 +196,12 @@ function createVenn(sets) {
     })
 
     .on("mouseout", function(d, i) {
-      tooltip.transition().duration(400).style("opacity", 0);
-      var selection = d3.select(this).transition("tooltip").duration(400);
-      selection.select("path")
-        .style("stroke-width", 0)
-        .style("fill-opacity", d.sets.length == 1 ? .25 : .0)
-        .style("stroke-opacity", 0);
+        tooltip.transition().duration(400).style("opacity", 0);
+        var selection = d3.select(this).transition("tooltip").duration(400);
+        selection.select("path")
+          .style("stroke-width", 0)
+          .style("fill-opacity", d.sets.length == 1 ? .25 : .0)
+          .style("stroke-opacity", 0);
     });
 }
 
@@ -330,6 +311,55 @@ function createBarChart(id, data) {
       .text(function (d) { return d.label; });
 }
 
+function getRondomNumber(max_value) {
+  return Math.floor(Math.random() * (max_value + 1));
+}
+
+function getSampleData() {
+  var data = [];
+  var sample_labels = ["10代", "20代", "30代", "40代", "50代", "60代"];
+
+  sample_labels.forEach(function(label) {
+    data.push({
+      nage: { value: label },
+      sex: { value: "女性" },
+      count_a: { value: getRondomNumber(500) },
+      count_b: { value: getRondomNumber(500) },
+      count_c: { value: getRondomNumber(500) },
+      count_a_b: { value: getRondomNumber(200) },
+      count_a_c: { value: getRondomNumber(200) },
+      count_b_c: { value: getRondomNumber(200) },
+      count_a_b_c: { value: getRondomNumber(100) },
+    });
+
+    data.push({
+      nage: { value: label },
+      sex: { value: "男性" },
+      count_a: { value: getRondomNumber(500) },
+      count_b: { value: getRondomNumber(500) },
+      count_c: { value: getRondomNumber(500) },
+      count_a_b: { value: getRondomNumber(200) },
+      count_a_c: { value: getRondomNumber(200) },
+      count_b_c: { value: getRondomNumber(200) },
+      count_a_b_c: { value: getRondomNumber(100) },
+    });
+  });
+
+  data.push({
+    nage: { value: null },
+    sex: { value: null },
+    count_a: { value: getRondomNumber(1000) },
+    count_b: { value: getRondomNumber(1000) },
+    count_c: { value: getRondomNumber(1000) },
+    count_a_b: { value: getRondomNumber(400) },
+    count_a_c: { value: getRondomNumber(400) },
+    count_b_c: { value: getRondomNumber(400) },
+    count_a_b_c: { value: getRondomNumber(100) },
+  });
+
+  return data;
+}
+
 function parentPost(chart_id) {
   window.parent.parent.postMessage(chart_id , "https://localhost");
-} 
+}
